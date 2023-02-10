@@ -4,7 +4,9 @@ SDK to simplify integration of Casper Wallet with your amazing web app!
 
 ## Installation
 
-In the future this library will be available as npm package, for now it's injected as an global object to the global scope of your webapp.
+In the future this library will be available as npm package, so you can import it with all types.
+
+For now it's injected as an global object to the global scope of your webapp by Casper Wallet extension content script and you can access provider class and event types like below:
 
 ```ts
 const CasperWalletProvider = window.CasperWalletProvider;
@@ -15,10 +17,12 @@ const CasperWalletEventTypes = window.CasperWalletEventTypes;
 
 ### Usage
 
+NOTE: be aware that `window.CasperWalletProvider` will be available asynchronously, because extension has to load in the browser.
+
 ```ts
 const CasperWalletProvider = window.CasperWalletProvider;
 
-const provider = new CasperWalletProvider();
+const provider = CasperWalletProvider();
 ```
 
 ### Constructor
