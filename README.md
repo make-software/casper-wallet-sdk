@@ -4,7 +4,7 @@ SDK to simplify integration of Casper Wallet with your amazing web app!
 
 ## Installation
 
-> In the near future we're plannig to publish an SDK library as a npm package, so you can use it as a dependency in your JS/TS project, offering all the suplementary TypeScript types and other helpful utilities to further streamline maintenance of the wallet integration when we add new features.
+> In the near future we're planning to publish an SDK library as a npm package, so you can use it as a dependency in your JS/TS project, offering all the supplementary TypeScript types and other helpful utilities to further streamline maintenance of the wallet integration when we add new features.
 
 For now, the SDK is injected into the global scope of your website window by the Casper Wallet extension content script, and you can access provider class and event types as below:
 
@@ -42,21 +42,15 @@ type CasperWalletProviderOptions = {
 
 ### Methods
 
-#### Request the connect account interface with the Casper Wallet extension
+#### Request the connect interface with the Casper Wallet extension. Will not show UI for already connected accounts and return true immediately
 
 ```ts
 requestConnection(): Promise<boolean>
 ```
 
-- returns `true` value when connection request is accepted by the user, `false` otherwise.
+- returns `true` value when connection request is accepted by the user or when account is already connected, `false` otherwise.
 
-#### Disconnect the Casper Wallet extension
-
-```ts
-disconnectFromSite(): Promise<boolean>
-```
-
-- returns `true` value when successfully disconnected, `false` otherwise.
+- emits event of type `Connected` when successfully connected.
 
 #### Request the switch account interface with the Casper Wallet extension
 
@@ -66,29 +60,7 @@ requestSwitchAccount(): Promise<boolean>
 
 - returns `true` value when successfully switched account, `false` otherwise.
 
-#### Get the connection status of the Casper Wallet extension
-
-```ts
-isConnected(): Promise<boolean>
-```
-
-- returns `true` value when curently connected at least one account, `false` otherwise.
-
-#### Get the active public key of the Casper Wallet extension
-
-```ts
-getActivePublicKey(): Promise<string | undefined>
-```
-
-- returns hex hash of the active public key.
-
-#### Get version of the Casper Wallet extension
-
-```ts
-getVersion(): Promise<string>;
-```
-
-- returns version of the installed wallet extension.
+- emits event of type `ActiveKeyChanged` when successfully switched account.
 
 #### Request the sign deploy interface with the Casper Wallet extension
 
@@ -155,14 +127,48 @@ provider
   });
 ```
 
+#### Disconnect the Casper Wallet extension
+
+```ts
+disconnectFromSite(): Promise<boolean>
+```
+
+- returns `true` value when successfully disconnected, `false` otherwise.
+
+- emits event of type `Disconnected` when successfully disconnected.
+
+#### Get the connection status of the Casper Wallet extension
+
+```ts
+isConnected(): Promise<boolean>
+```
+
+- returns `true` value when currently connected at least one account, `false` otherwise.
+
+#### Get the active public key of the Casper Wallet extension
+
+```ts
+getActivePublicKey(): Promise<string | undefined>
+```
+
+- returns hex hash of the active public key.
+
+#### Get version of the Casper Wallet extension
+
+```ts
+getVersion(): Promise<string>;
+```
+
+- returns version of the installed wallet extension.
+
 ## Events
 
-Casper Wallet extension is emitting events when the user interacts with the wallet interface.
-You should listen to those events to keep the UI of your application in sync with the Wallet state.
+Casper Wallet extension is emitting events in the browser window of a connected site when the user interacts with the wallet extension.
+You should set listeners to those events to keep the UI of your application in sync with the wallet extension state.
 
 ### CasperWalletState
 
-Each event will contain a `json string` payload in the `event.detail` property. This payload contains the Casper Wallet internal state so you can keep you application UI in sync.
+Each event will contain a `json string` payload in the `event.detail` property. This payload contains the Casper Wallet extension internal state so you can keep you application UI in sync.
 
 ```ts
 export type CasperWalletState = {
@@ -186,27 +192,27 @@ const handleEvent = (event: { detail: string }) => {
 
 Event types emitted by the Casper Wallet extension.
 
-Account was connected using the wallet:
+Emitted when account was successfully connected:
 
 - Connected: "casper-wallet:connected"
 
-Account was disconnected using the wallet:
+Emitted when account was successfully disconnected:
 
 - Disconnected: "casper-wallet:disconnected"
 
-Browser tab was changed to some connected site:
+Emitted when browser tab was changed to one containing a connected site:
 
 - TabChanged: "casper-wallet:tabChanged"
 
-Active key was changed using the Wallet interface:
+Emitted when active key was changed in the wallet extension:
 
 - ActiveKeyChanged: "casper-wallet:activeKeyChanged"
 
-Wallet was locked:
+Emitted when the wallet extension was locked:
 
 - Locked: "casper-wallet:locked"
 
-Wallet was unlocked:
+Emitted when the wallet extension was unlocked:
 
 - Unlocked: "casper-wallet:unlocked"
 
