@@ -1,4 +1,4 @@
-# casper-wallet-sdk
+# Casper Wallet SDK
 
 SDK to simplify integration of Casper Wallet with your amazing web app!
 
@@ -283,3 +283,7 @@ signMessage(message, accountPublicKey)
     handleError(err);
   });
 ```
+
+## Contributing
+
+We welcome contributions from the community to help improve the Casper Wallet SDK. If you're interested in contributing, please read our [contribution guidelines](CONTRIBUTING.md) to get started.
