@@ -15,6 +15,8 @@ const CasperWalletEventTypes = window.CasperWalletEventTypes;
 
 ## CasperWalletProvider
 
+The `CasperWalletProvider` class serves as the main interface for interacting with the Casper Wallet extension. It provides a collection of methods that enable developers to easily request connections, switch accounts, sign deploys, sign messages, and manage wallet events. By using this class, developers can seamlessly integrate the Casper Wallet into their web applications, ensuring a smooth user experience.
+
 ### Usage
 
 NOTE: be aware that `window.CasperWalletProvider` will be available asynchronously, because extension has to load in the browser.
