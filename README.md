@@ -174,8 +174,8 @@ Each event will contain a `json string` payload in the `event.detail` property. 
 export type CasperWalletState = {
   /** contain wallet is locked flag */
   isLocked: boolean;
-  /** contain active key is connected flag */
-  isConnected: boolean;
+  /** if unlocked contain connected status flag of active key otherwise null */
+  isConnected: boolean | null;
   /** if unlocked and connected contain active key otherwise null */
   activeKey: string | null;
 };
@@ -191,16 +191,18 @@ const handleEvent = (event: { detail: string }) => {
 ### CasperWalletEventType
 
 Event types emitted by the Casper Wallet extension.
+Events like (connected & disconnected & tabChanged) are relevant only to the currently active connected site that triggered the call so events will emit only to these tabs containing the same origin to not impact different opened sites.
+Other events are emitted to all active tabs in all opened browser windows because they are triggered by the wallet state change and should be received by all opened sites to keep in sync.
 
-Emitted when account was successfully connected:
+Emitted when account was successfully connected (only to active site):
 
 - Connected: "casper-wallet:connected"
 
-Emitted when account was successfully disconnected:
+Emitted when account was successfully disconnected (only to active site):
 
 - Disconnected: "casper-wallet:disconnected"
 
-Emitted when browser tab was changed to one containing a connected site:
+Emitted when browser tab was changed to one containing a connected site (only to active site)::
 
 - TabChanged: "casper-wallet:tabChanged"
 
