@@ -1,4 +1,4 @@
-# casper-wallet-sdk
+# Casper Wallet SDK
 
 SDK to simplify integration of Casper Wallet with your amazing web app!
 
@@ -14,6 +14,8 @@ const CasperWalletEventTypes = window.CasperWalletEventTypes;
 ```
 
 ## CasperWalletProvider
+
+The `CasperWalletProvider` class serves as the main interface for interacting with the Casper Wallet extension. It provides a collection of methods that enable developers to easily request connections, switch accounts, sign deploys, sign messages, and manage wallet events. By using this class, developers can seamlessly integrate the Casper Wallet into their web applications, ensuring a smooth user experience.
 
 ### Usage
 
@@ -285,3 +287,7 @@ signMessage(message, accountPublicKey)
     handleError(err);
   });
 ```
+
+## Contributing
+
+We welcome contributions from the community to help improve the Casper Wallet SDK. If you're interested in contributing, please read our [contribution guidelines](CONTRIBUTING.md) to get started.
