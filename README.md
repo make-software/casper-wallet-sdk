@@ -146,14 +146,17 @@ isConnected(): Promise<boolean>
 ```
 
 - returns `true` value when currently connected at least one account, `false` otherwise.
+- throws when wallet is locked (err.code: 1)
 
 #### Get the active public key of the Casper Wallet extension
 
 ```ts
-getActivePublicKey(): Promise<string | undefined>
+getActivePublicKey(): Promise<string>
 ```
 
 - returns hex hash of the active public key.
+- throws when wallet is locked (err.code: 1)
+- throws when active account not approved to connect with the site (err.code: 2)
 
 #### Get version of the Casper Wallet extension
 
@@ -176,10 +179,10 @@ Each event will contain a `json string` payload in the `event.detail` property. 
 export type CasperWalletState = {
   /** contain wallet is locked flag */
   isLocked: boolean;
-  /** if unlocked contain connected status flag of active key otherwise null */
-  isConnected: boolean | null;
-  /** if unlocked and connected contain active key otherwise null */
-  activeKey: string | null;
+  /** if unlocked contain connected status flag of active key otherwise undefined */
+  isConnected: boolean | undefined;
+  /** if unlocked and connected contain active key otherwise undefined */
+  activeKey: string | undefined;
 };
 
 const handleEvent = (event: { detail: string }) => {
