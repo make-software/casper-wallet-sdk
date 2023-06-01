@@ -1,6 +1,6 @@
 # Casper Wallet SDK
 
-SDK to simplify integration of Casper Wallet with your amazing web app!
+SDK to simplify integration of [Casper Wallet](https://github.com/make-software/casper-wallet) with your amazing web app!
 
 ## Installation
 
