@@ -100,6 +100,47 @@ provider
   });
 ```
 
+#### Request the interface to validate the transaction with the Casper Wallet extension
+
+```ts
+putDeploy(signedDeploy: Deploy): Promise<string>
+```
+
+- returns a Deploy's transaction hash, as a hexadecimal string
+
+Example:
+
+```ts
+import { CLPublicKey, DeployUtil, CasperClient } from 'casper-js-sdk';
+const deployJson = DeployUtil.deployToJson(deploy);
+
+provider
+  .sign(JSON.stringify(deployJson), accountPublicKey)
+  .then(res => {
+    if (res.cancelled) {
+      alert('Sign cancelled');
+    } else {
+      const signedDeploy = DeployUtil.setSignature(
+        deploy,
+        res.signature,
+        CLPublicKey.fromHex(accountPublicKey)
+      );
+      if(signedDeploy != null){
+        const casperClient = new CasperClient(YOUR_NODE_URL);
+        try {
+          const res = await casperClient.putDeploy(signedDeploy);
+          console.log(res);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      }
+    }
+  })
+  .catch(err => {
+    alert('Error: ' + err);
+  });
+```
+
 #### Request the sign message interface with the Casper Wallet extension
 
 ```ts
