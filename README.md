@@ -2,6 +2,8 @@
 
 SDK to simplify integration of [Casper Wallet](https://github.com/make-software/casper-wallet) with your amazing web app!
 
+**Please note that the recommended way of integrating Casper Wallet into your app is now through [CSPR.click](https://CSPR.click), which provides a combined integration of major wallets in the Casper ecosystem, all at once, without the burden of maintaining multiple integrations at the same time. Please head over to [the CSPR.click documentation](https://docs.cspr.click) to start.**
+
 ## Installation
 
 > In the near future we're planning to publish an SDK library as a npm package, so you can use it as a dependency in your JS/TS project, offering all the supplementary TypeScript types and other helpful utilities to further streamline maintenance of the wallet integration when we add new features.
