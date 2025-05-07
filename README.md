@@ -17,7 +17,7 @@ const CasperWalletEventTypes = window.CasperWalletEventTypes;
 
 ## CasperWalletProvider
 
-The `CasperWalletProvider` class serves as the main interface for interacting with the Casper Wallet extension. It provides a collection of methods that enable developers to easily request connections, switch accounts, sign deploys, sign messages, and manage wallet events. By using this class, developers can seamlessly integrate the Casper Wallet into their web applications, ensuring a smooth user experience.
+The `CasperWalletProvider` class serves as the main interface for interacting with the Casper Wallet extension. It provides a collection of methods that enable developers to easily request connections, switch accounts, sign transactions, sign messages, and manage wallet events. By using this class, developers can seamlessly integrate the Casper Wallet into their web applications, ensuring a smooth user experience.
 
 ### Usage
 
@@ -66,13 +66,13 @@ requestSwitchAccount(): Promise<boolean>
 
 - emits event of type `ActiveKeyChanged` when successfully switched account.
 
-#### Request the sign deploy interface with the Casper Wallet extension
+#### Request the sign transaction interface with the Casper Wallet extension
 
 ```ts
-sign(deployJson: string, signingPublicKeyHex: string): Promise<SignatureResponse>
+sign(transactionJson: string, signingPublicKeyHex: string): Promise<SignatureResponse>
 ```
 
-- `deployJson` - stringified json of a deploy (use `DeployUtil.deployToJson` from `casper-js-sdk` and `JSON.stringify`)
+- `transactionJson` - stringified json of a transaction (use `toJSON` method of `Transaction` instance from `casper-js-sdk` and `JSON.stringify`)
 
 - `signingPublicKeyHex` - public key hash (in hex format)
 
@@ -81,20 +81,20 @@ sign(deployJson: string, signingPublicKeyHex: string): Promise<SignatureResponse
 Example:
 
 ```ts
-const deployJson = DeployUtil.deployToJson(deploy);
+const transaction = Transaction.fromTransactionV1(...);
+const transactionJson = transaction.toJSON();
 
 provider
-  .sign(JSON.stringify(deployJson), accountPublicKey)
+  .sign(JSON.stringify(transactionJson), accountPublicKey)
   .then(res => {
     if (res.cancelled) {
       alert('Sign cancelled');
     } else {
-      const signedDeploy = DeployUtil.setSignature(
-        deploy,
+      const signedTransaction = transaction.setSignature(
         res.signature,
         CLPublicKey.fromHex(accountPublicKey)
       );
-      alert('Sign successful: ' + JSON.stringify(signedDeploy, null, 2));
+      alert('Sign successful: ' + JSON.stringify(signedTransaction, null, 2));
     }
   })
   .catch(err => {
@@ -160,6 +160,18 @@ getActivePublicKey(): Promise<string>
 - throws when wallet is locked (err.code: 1)
 - throws when active account not approved to connect with the site (err.code: 2)
 
+#### Get a list of features that the active public key supports.
+It can be `CasperWalletSupports` (`sign-deploy`, `sign-transactionv1` and `signMessage`)
+
+```ts
+getActivePublicKeySupports(): Promise<string[]>
+```
+
+- returns array of features that supports the active public key.
+- throws when wallet is locked (err.code: 1)
+- throws when active account not approved to connect with the site (err.code: 2)
+
+
 #### Get version of the Casper Wallet extension
 
 ```ts
@@ -185,6 +197,8 @@ export type CasperWalletState = {
   isConnected: boolean | undefined;
   /** if unlocked and connected contain active key otherwise undefined */
   activeKey: string | undefined;
+  /** if unlocked and connected, contain a list of supported features for the current active key otherwise `undefined` */
+  activeKeySupports: CasperWalletSupports[] | undefined;
 };
 
 const handleEvent = (event: { detail: string }) => {
@@ -225,6 +239,10 @@ Emitted when the wallet extension was unlocked:
 
 - Unlocked: "casper-wallet:unlocked"
 
+The active key was changed using the Wallet interface:
+
+- ActiveKeySupportsChanged: casper-wallet:activeKeySupportsChanged
+
 ### Events Usage
 
 ```ts
@@ -254,6 +272,14 @@ useEffect(() => {
 ## Types
 
 Helper types for type safety and awesome developer experience.
+
+```ts
+enum CasperWalletSupports {
+  signDeploy = 'sign-deploy',
+  signTransactionV1 = 'sign-transactionv1',
+  signMessage = 'sign-message'
+}
+```
 
 ### SignatureResponse
 
