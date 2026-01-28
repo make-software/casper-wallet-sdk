@@ -199,7 +199,7 @@ decryptMessage(message: string, signingPublicKeyHex: string): Promise<DecryptedR
 - `message` - Encrypted message to decrypt
 - `signingPublicKeyHex` - public key hash (in hex format)
 
-- returns a payload response when user responded to transaction request, it will contain `message` if approved, or `cancelled === true` flag when rejected.
+- returns a payload response when user responded to transaction request, it will contain `decryptedMessage` if approved, or `cancelled === true` flag when rejected.
 
 Example:
 
@@ -210,7 +210,7 @@ provider
     if (res.cancelled) {
       alert('Sign cancelled');
     } else {
-      alert('Sign successful: ' + JSON.stringify(res.message, null, 2));
+      alert('Sign successful: ' + JSON.stringify(res.decryptedMessage, null, 2));
     }
   })
   .catch(err => {
@@ -344,7 +344,7 @@ export type DecryptedResponse =
 }
   | {
   cancelled: false; // if sign was successfull
-  message: string; // decrypted message
+  decryptedMessage: string; // decrypted message
 };
 ```
 
