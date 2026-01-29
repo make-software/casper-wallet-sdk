@@ -183,12 +183,12 @@ getVersion(): Promise<string>;
 #### Encrypt message with publicKey
 
 ```ts
-getEncryptedMessage(message: string, signingPublicKeyHex: string): Promise<GetEncryptedMessageResponse>
+encryptMessage(message: string, signingPublicKeyHex: string): Promise<EncryptMessageResponse>
 ```
 
 - `message` - message to to encrypt. Max length is 4096 characters
 - `signingPublicKeyHex` - public key hash (in hex format)
-- returns `GetEncryptedMessageResponse`
+- returns `EncryptMessageResponse`
 
 #### Request the decrypt message interface with the Casper Wallet extension
 
@@ -349,10 +349,10 @@ export type DecryptedResponse =
 };
 ```
 
-### GetEncryptedMessageResponse
+### EncryptMessageResponse
 
 ```ts
-export type GetEncryptedMessageResponse = {
+export type EncryptMessageResponse = {
   encryptedMessage: string; 
 };
 ```
