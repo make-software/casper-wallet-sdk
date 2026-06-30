@@ -134,14 +134,14 @@ provider
 #### Request the EIP-712 typed data signing interface with the Casper Wallet extension
 
 ```ts
-signTypedData(params: SignTypedDataParams, signingPublicKey: string): Promise<SignTypedDataResult | undefined>
+signTypedData(params: SignTypedDataParams, signingPublicKeyHex: string): Promise<SignTypedDataResult>
 ```
 
 - `params` - the EIP-712 typed data to sign (`domain`, `types`, `primaryType`, `message`) plus optional `options` (see [`SignTypedDataParams`](#signtypeddataparams))
 
-- `signingPublicKey` - public key to sign with (in hex format)
+- `signingPublicKeyHex` - public key to sign with (in hex format)
 
-- returns a [`SignTypedDataResult`](#signtypeddataresult). On success it contains the `signature`, the signed `digest` and the `publicKey`; if the user rejects, `cancelled === true`; on failure, `error` and `errorCode` are set. May resolve to `undefined` if the request could not be delivered.
+- returns a [`SignTypedDataResult`](#signtypeddataresult). On success it contains the `signature`, the signed `digest` and the `publicKey`; if the user rejects, `cancelled === true`; on failure, `error` and `errorCode` are set.
 
 - requires the active account to support `sign-typed-data-eip712` (check via [`getActivePublicKeySupports`](#get-a-list-of-features-that-the-active-public-key-supports) / [`CasperWalletSupports`](#types)).
 
@@ -445,13 +445,9 @@ Unlike the other methods, `signTypedData` does not throw on a failed signing req
 
 ```ts
 const SignTypedDataErrorCodes = {
-  USER_REJECTED: 'USER_REJECTED',
   INVALID_PARAMS: 'INVALID_PARAMS',
-  UNSUPPORTED_TYPE: 'UNSUPPORTED_TYPE',
   DOMAIN_TYPES_REQUIRED: 'DOMAIN_TYPES_REQUIRED',
-  SIGNATURE_SCHEME_NOT_SUPPORTED: 'SIGNATURE_SCHEME_NOT_SUPPORTED',
-  ACCOUNT_NOT_FOUND: 'ACCOUNT_NOT_FOUND',
-  NOT_AUTHORIZED: 'NOT_AUTHORIZED'
+  UNSUPPORTED_TYPE: 'UNSUPPORTED_TYPE'
 } as const;
 
 type SignTypedDataErrorCode =
