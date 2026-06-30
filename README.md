@@ -131,6 +131,61 @@ provider
   });
 ```
 
+#### Request the EIP-712 typed data signing interface with the Casper Wallet extension
+
+```ts
+signTypedData(params: SignTypedDataParams, signingPublicKeyHex: string): Promise<SignTypedDataResult>
+```
+
+- `params` - the EIP-712 typed data to sign (`domain`, `types`, `primaryType`, `message`) plus optional `options` (see [`SignTypedDataParams`](#signtypeddataparams))
+
+- `signingPublicKeyHex` - public key to sign with (in hex format)
+
+- returns a [`SignTypedDataResult`](#signtypeddataresult). On success it contains the `signature`, the signed `digest` and the `publicKey`; if the user rejects, `cancelled === true`; on failure, `error` and `errorCode` are set.
+
+- requires the active account to support `sign-typed-data-eip712` (check via [`getActivePublicKeySupports`](#get-a-list-of-features-that-the-active-public-key-supports) / [`CasperWalletSupports`](#types)).
+
+Example:
+
+```ts
+const typedData = {
+  domain: {
+    name: 'MyDapp',
+    version: '1',
+    chain_name: 'casper',
+    contract_package_hash: '0x...'
+  },
+  types: {
+    Permit: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' }
+    ]
+  },
+  primaryType: 'Permit',
+  message: {
+    owner: '0x...',
+    spender: '0x...',
+    value: '1000'
+  }
+};
+
+provider
+  .signTypedData({ typedData }, accountPublicKey)
+  .then(res => {
+    if (!res || res.cancelled) {
+      alert('Sign cancelled');
+    } else if (res.error) {
+      alert(`Sign failed: ${res.error} (${res.errorCode})`);
+    } else {
+      alert('Sign successful: ' + res.signature);
+    }
+  })
+  .catch(err => {
+    alert('Error: ' + err);
+  });
+```
+
 #### Disconnect the Casper Wallet extension
 
 ```ts
@@ -161,7 +216,8 @@ getActivePublicKey(): Promise<string>
 - throws when active account not approved to connect with the site (err.code: 2)
 
 #### Get a list of features that the active public key supports.
-It can be `CasperWalletSupports` (`sign-deploy`, `sign-transactionv1` and `signMessage`)
+
+It can be `CasperWalletSupports` (`sign-deploy`, `sign-transactionv1`, `signMessage` and `signTypedDataEIP712`)
 
 ```ts
 getActivePublicKeySupports(): Promise<string[]>
@@ -170,7 +226,6 @@ getActivePublicKeySupports(): Promise<string[]>
 - returns array of features that supports the active public key.
 - throws when wallet is locked (err.code: 1)
 - throws when active account not approved to connect with the site (err.code: 2)
-
 
 #### Get version of the Casper Wallet extension
 
@@ -277,7 +332,8 @@ Helper types for type safety and awesome developer experience.
 enum CasperWalletSupports {
   signDeploy = 'sign-deploy',
   signTransactionV1 = 'sign-transactionv1',
-  signMessage = 'sign-message'
+  signMessage = 'sign-message',
+  signTypedDataEIP712 = 'sign-typed-data-eip712'
 }
 ```
 
@@ -307,6 +363,70 @@ function handleResponse(res: SignatureResponse) {
 }
 ```
 
+### SignTypedDataParams
+
+Parameters for EIP-712 typed-data signing.
+
+```ts
+type SignTypedDataParams = {
+  typedData: {
+    domain: Record<string, unknown>;
+    types: Record<string, Array<{ name: string; type: string }>>;
+    primaryType: string;
+    message: Record<string, unknown>;
+  };
+  options?: {
+    /**
+     * Domain schema for hashing.
+     * Optional. The wallet uses typedData.types.EIP712Domain when present.
+     */
+    domainTypes?: Array<{ name: string; type: string }>;
+    /** If true, include digest/domainSeparator/structHash in response */
+    returnHashArtifacts?: boolean;
+    /** If true, wallet MUST reject if typedData contains unknown/extra message fields */
+    rejectUnknownFields?: boolean;
+  };
+};
+```
+
+### SignTypedDataResult
+
+Result of an EIP-712 typed-data signing operation.
+
+```ts
+type EIP712HashArtifacts = {
+  /** Domain type string (only if returnHashArtifacts was true) */
+  domainTypeString?: string;
+  /** Domain object (only if returnHashArtifacts was true) */
+  domain?: Record<string, unknown>;
+  /** 0x-prefixed domain separator hash (only if returnHashArtifacts was true) */
+  domainSeparator?: string;
+  /** Canonical type string (only if returnHashArtifacts was true) */
+  canonicalTypeString?: string;
+  /** 0x prefixed type hash (only if returnHashArtifacts was true) */
+  typeHash?: string;
+  /** 0x-prefixed struct hash (only if returnHashArtifacts was true) */
+  structHash?: string;
+};
+
+type SignTypedDataResult = {
+  /** Whether the signing operation was cancelled by the user */
+  cancelled: boolean;
+  /** Prefixed signature hex (01 for ed25519, 02 for secp256k1) + signature bytes, or null if cancelled/failed */
+  signature: string | null;
+  /** 0x-prefixed 32-byte hex digest that was signed, or null if cancelled/failed */
+  digest: string | null;
+  /** Prefixed public key used for signing, or null if cancelled/failed */
+  publicKey: string | null;
+  /** Error message if the operation failed, or null if successful */
+  error: string | null;
+  /** Machine-readable error code from SignTypedDataErrorCodes */
+  errorCode?: SignTypedDataErrorCode;
+  /** intermediate hash artifacts for debugging (only if returnHashArtifacts was true) */
+  hashArtifacts?: EIP712HashArtifacts;
+};
+```
+
 ## Error Handling
 
 Each promise will return an error if something unexpected happens so you should always catch errors from each SDK call and handle them accordingly.
@@ -317,6 +437,29 @@ signMessage(message, accountPublicKey)
   .catch((err) => {
     handleError(err);
   });
+```
+
+### signTypedData error codes
+
+Unlike the other methods, `signTypedData` does not throw on a failed signing request — instead it resolves with a [`SignTypedDataResult`](#signtypeddataresult) whose `error` (human-readable message) and `errorCode` (machine-readable) fields are set. Possible codes:
+
+```ts
+const SignTypedDataErrorCodes = {
+  INVALID_PARAMS: 'INVALID_PARAMS',
+  DOMAIN_TYPES_REQUIRED: 'DOMAIN_TYPES_REQUIRED',
+  UNSUPPORTED_TYPE: 'UNSUPPORTED_TYPE'
+} as const;
+
+type SignTypedDataErrorCode =
+  (typeof SignTypedDataErrorCodes)[keyof typeof SignTypedDataErrorCodes];
+```
+
+```ts
+provider.signTypedData({ typedData }, accountPublicKey).then(res => {
+  if (res && res.error) {
+    handleError(res.errorCode, res.error);
+  }
+});
 ```
 
 ## Contributing
