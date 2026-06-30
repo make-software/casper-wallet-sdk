@@ -235,6 +235,45 @@ getVersion(): Promise<string>;
 
 - returns version of the installed wallet extension.
 
+#### Encrypt message with publicKey
+
+```ts
+encryptMessage(message: string, signingPublicKeyHex: string): Promise<EncryptMessageResponse>
+```
+
+- `message` - message to to encrypt. Max length is 4096 characters
+- `signingPublicKeyHex` - public key hash (in hex format)
+- returns `EncryptMessageResponse`
+
+#### Request the decrypt message interface with the Casper Wallet extension
+
+```ts
+decryptMessage(message: string, signingPublicKeyHex: string): Promise<DecryptedResponse>
+```
+
+- `message` - Encrypted message to decrypt
+- `signingPublicKeyHex` - public key hash (in hex format)
+
+- returns a payload response when user responded to transaction request, it will contain `decryptedMessage` if approved, or `cancelled === true` flag when rejected.
+
+Example:
+
+```ts
+provider
+  .decryptMessage(message, accountPublicKey)
+  .then(res => {
+    if (res.cancelled) {
+      alert('Sign cancelled');
+    } else {
+      alert('Sign successful: ' + JSON.stringify(res.decryptedMessage, null, 2));
+    }
+  })
+  .catch(err => {
+    alert('Error: ' + err);
+  });
+```
+
+
 ## Events
 
 Casper Wallet extension is emitting events in the browser window of a connected site when the user interacts with the wallet extension.
@@ -333,6 +372,8 @@ enum CasperWalletSupports {
   signDeploy = 'sign-deploy',
   signTransactionV1 = 'sign-transactionv1',
   signMessage = 'sign-message',
+  messageEncryption = 'message-encryption',
+  messageDecryption = 'message-decryption',
   signTypedDataEIP712 = 'sign-typed-data-eip712'
 }
 ```
@@ -349,6 +390,27 @@ type SignatureResponse =
       signatureHex: string; // signature as hex hash
       signature: Uint8Array; // signature as byte array
     };
+```
+
+### DecryptedResponse
+
+```ts
+export type DecryptedResponse =
+  | {
+  cancelled: true; // if sign was cancelled
+}
+  | {
+  cancelled: false; // if sign was successfull
+  decryptedMessage: string; // decrypted message
+};
+```
+
+### EncryptMessageResponse
+
+```ts
+export type EncryptMessageResponse = {
+  encryptedMessage: string; 
+};
 ```
 
 Usage:
